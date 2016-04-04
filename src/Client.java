@@ -37,6 +37,7 @@ public class Client{
                      break;
         }
     }
+    // sends the initial read request
     private void ReadRequest(String file, String mode){
         try(DatagramSocket socket = new DatagramSocket()){ 
             serverAddress = InetAddress.getByName(server);
@@ -54,8 +55,10 @@ public class Client{
             System.out.println("There was an issue with the ReadRequest"); 
         }
     }
+    // the server sends the data back to the client (aka me)
     private void continueRead(){
     }
+    // sends the initial write request
     private void WriteRequest(String file, String mode){
         try(DatagramSocket socket = new DatagramSocket()){ 
             serverAddress = InetAddress.getByName(server);
@@ -73,6 +76,7 @@ public class Client{
             System.out.println("There was an issue with the ReadRequest"); 
         }
     }
+    //I send the data to the server
     private void continueWrite(){
     }
 }
