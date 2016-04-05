@@ -41,7 +41,7 @@ public class Packet{
         System.arraycopy(opcode, 0, packet, 0, opcode.length);
         System.arraycopy(filename, 0, packet, opcode.length, filename.length);
         packet[opcode.length + filename.length] = 0;
-        System.arraycopy(mode, 0, packet, opcode.length+filename.length, mode.length);
+        System.arraycopy(mode, 0, packet, opcode.length+filename.length+1, mode.length);
         packet[packet.length-1] = 0;
         return packet; 
     }
