@@ -15,11 +15,11 @@ public class Client{
 
     private InetAddress serverAddress; 
 
-    private String server = "10.19.81.115";
+    private String server = "10.19.80.228";
     private int initialPort = 69;
     private int serverPort;
 
-    private String file = "longnight.txt";
+    private String file = "bugoti.png";
     private String mode = "octet";
 
     private final int TIMEOUT = 10000;
@@ -76,7 +76,7 @@ public class Client{
                     block[1] = packet.getData()[3];
                     sendAck(block, serverName, socket);
                     FileOutputStream fos = new FileOutputStream(file);
-                    if(packet.getLength() < 511){ 
+                    if(packet.getLength() <= 511){ 
                         fos.write(packet.getData(), 4, packet.getLength()-4);
                     }
                     else{
@@ -87,7 +87,7 @@ public class Client{
                 else if(packet.getData()[1] == 5){
                     errorCode[0] = packet.getData()[2];
                     errorCode[1] = packet.getData()[3];
-                    sendErrorPacket(errorCode, serverName, socket); 
+                   reportError(errorCode);
                 }
                 else{
 
@@ -97,8 +97,9 @@ public class Client{
                 System.out.println("error:" + e.getMessage());
             }
         }
-        while(dataPacket.BuildPacket3().length < 516);
+        while(dataPacket.BuildPacket3().length == 516);
     }
+    // sends an ack packet back to the server
     private void sendAck(byte[] blocknumber, InetAddress serverName, DatagramSocket socket){
         Packet ack = new Packet((byte) 4, blocknumber);
         DatagramPacket ACK = new DatagramPacket(ack.BuildPacket4(), ack.BuildPacket4().length, serverName, serverPort);
@@ -109,17 +110,12 @@ public class Client{
             System.out.println("Failed to send ack packet");
         }
     }
-    private void sendErrorPacket(byte[] errorCode, InetAddress serverName, DatagramSocket socket){
-        Packet error = new Packet((byte) 5, errorCode, Errmsg(errorCode));
-        DatagramPacket ERROR = new DatagramPacket(error.BuildPacket4(), error.BuildPacket4().length, serverName, serverPort);
-        try{
-            socket.send(ERROR);
-        }
-        catch(IOException e){
-            System.out.println("Failed to send error packet");
-        }
+    //builds and sends an error packet
+    private void reportError(byte[] errorCode){
+            System.out.println("Error: " + errorCode[1] + " " + Errmsg(errorCode));
 
     }
+    //returns the error msg that corresponds to the error code
     private String Errmsg(byte[] errorCode){
         if(errorCode[1] ==     0){
             return "Not defined, see error message if any";
@@ -196,6 +192,7 @@ public class Client{
             System.out.println("Error: " + e.getMessage());
         }
     }
+    //builds my data packet
     private byte[] SendData(FileInputStream fis, byte[] block){
         byte[] a = new byte[516];
         a[0] = 0;
@@ -210,6 +207,7 @@ public class Client{
         }
         return a;
     }
+    //increments the blocknumber in the data packet
     private byte[] incrementCount(byte[] blocknumber){
         if(blocknumber[1] ==-1){
             blocknumber[0]++ ;
