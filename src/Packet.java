@@ -30,9 +30,9 @@ public class Packet{
         this.blocknumber[1] = blocknumber[1];
     }
 // This creates a Error Packet Packet
-    public Packet(byte opcode, byte errorcode, String errmsg){
+    public Packet(byte opcode, byte[] errorcode, String errmsg){
         this.opcode = new byte[]{0, opcode};
-        this.errorcode = new byte[]{0, errorcode};
+        this.errorcode = errorcode;
         this.errmsg = errmsg.getBytes();
     }
     // this builds the read or write request packet to be put into a DatagramPacket and sent to or received from the server
