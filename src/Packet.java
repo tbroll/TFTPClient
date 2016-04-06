@@ -70,47 +70,6 @@ public class Packet{
         packet[packet.length-1] = 0;
         return packet; 
     }
-    //haven't decided yet if I actually need this.
-    public void setOpcode(byte[] opcode){
-        this.opcode = opcode;
-    }
-    //returns the opcode to determine the type of packet
-    public byte[] getOpcode(){
-        return opcode;
-    }
-    //haven't decided yet if I actually need this.
-    public void setFileName(String filename){
-        this.filename = filename.getBytes();
-    }
-    //returns the filename from read and write packets
-    public byte[] getFilename(){
-        return filename;
-    }
-    //haven't decided yet if I actually need this.
-    public void setMode(String mode){
-        this.mode = mode.getBytes();
-    }
-    //extracts the mode type (netascii or octet) from a data packet
-    public byte[] getMode(){
-        return mode;
-    }
-    //haven't decided yet if I actually need this.
-    public void setblockNumber(byte[] blocknumber){
-        this.blocknumber[0] = blocknumber[0];
-        this.blocknumber[1] = blocknumber[1];
-    }
-    //extracts the block number from a data packet to put into the acknowledgement
-    public byte[] getblockNumber(){
-        return blocknumber;
-    }
-    //haven't decided yet if I actually need this.
-    public void setData(byte[] data){
-        this.data = data;
-    }
-    //extracts the data from a data packet
-    public byte[] getData(){
-        return data;
-    }
 }
 
 
