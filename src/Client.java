@@ -1,7 +1,7 @@
 import java.net.*;
 import java.io.*;
 import java.lang.*;
-import java.util.Scanner;
+import java.util.*;
 import java.nio.ByteBuffer;
 
 public class Client{
@@ -13,14 +13,13 @@ public class Client{
     private DatagramPacket inboundPacket;
     private DatagramPacket outboundPacket;
 
-
     private InetAddress serverAddress; 
 
-    private String server = "192.168.0.16";
+    private String server = "10.19.81.115";
     private int initialPort = 69;
     private int serverPort;
 
-    private String file = "test.txt";
+    private String file = "longnight.txt";
     private String mode = "octet";
 
     private final int TIMEOUT = 10000;
@@ -54,43 +53,55 @@ public class Client{
             else{
                 System.out.println("Packet too big");
             }
+            receiveData(socket, serverAddress);
         }
         catch(IOException e){
             System.out.println("There was an issue with the ReadRequest"); 
         }
     }
     // the server sends the data back to the client (aka me)
-    private void continueRead(DatagramSocket socket, InetAddress serverName){
+    private void receiveData(DatagramSocket socket, InetAddress serverName){
         byte[] block = new byte[2];
         byte[] data = new byte[512];
         byte[] errorCode = new byte[2];
-        byte[] opcode = {0,3};
-        Packet dataPacket = new Packet(opcode[1], block, data); 
-        DatagramPacket packet = new DatagramPacket(dataPacket.BuildPacket3(), dataPacket.BuildPacket3().length, serverName, socket.getPort());
+        byte[] opcode = new byte[2];
+        Packet dataPacket = new Packet((byte)1, block, data); 
+        DatagramPacket packet = new DatagramPacket(dataPacket.BuildPacket3(), dataPacket.BuildPacket3().length, serverName, serverPort);
         do {
             try{
                 socket.receive(packet);
                 serverPort = packet.getPort();
-                if(opcode[1] == 3) {
+                if(packet.getData()[1] == 3){
+                    block[0] = packet.getData()[2];
+                    block[1] = packet.getData()[3];
                     sendAck(block, serverName, socket);
                     FileOutputStream fos = new FileOutputStream(file);
-                    fos.write(data);
+                    if(packet.getLength() < 511){ 
+                        fos.write(packet.getData(), 4, packet.getLength()-4);
+                    }
+                    else{
+                        fos.write(packet.getData(), 4, packet.getData().length-4);
+                    }
                     fos.close();
                 }
-                else {
-                    sendErrorPacket(block, errorCode) ;
+                else if(packet.getData()[1] == 5){
+                    errorCode[0] = packet.getData()[2];
+                    errorCode[1] = packet.getData()[3];
+                    sendErrorPacket(errorCode, serverName, socket); 
+                }
+                else{
+
                 }
             }
             catch(IOException e){
-                System.out.println("error");
+                System.out.println("error:" + e.getMessage());
             }
-
         }
         while(dataPacket.BuildPacket3().length < 516);
     }
     private void sendAck(byte[] blocknumber, InetAddress serverName, DatagramSocket socket){
         Packet ack = new Packet((byte) 4, blocknumber);
-        DatagramPacket ACK = new DatagramPacket(ack.BuildPacket3(), ack.BuildPacket3().length, serverName, serverPort);
+        DatagramPacket ACK = new DatagramPacket(ack.BuildPacket4(), ack.BuildPacket4().length, serverName, serverPort);
         try{
             socket.send(ACK);
         }
@@ -98,8 +109,42 @@ public class Client{
             System.out.println("Failed to send ack packet");
         }
     }
-    private void sendErrorPacket(byte[] blocknumber, byte[] errorCode){
+    private void sendErrorPacket(byte[] errorCode, InetAddress serverName, DatagramSocket socket){
+        Packet error = new Packet((byte) 5, errorCode, Errmsg(errorCode));
+        DatagramPacket ERROR = new DatagramPacket(error.BuildPacket4(), error.BuildPacket4().length, serverName, serverPort);
+        try{
+            socket.send(ERROR);
+        }
+        catch(IOException e){
+            System.out.println("Failed to send error packet");
+        }
 
+    }
+    private String Errmsg(byte[] errorCode){
+        if(errorCode[1] ==     0){
+            return "Not defined, see error message if any";
+        }
+        else if(errorCode[1] == 1){
+            return "file not found";
+        }
+        else if(errorCode[1] == 2){
+            return "Access Violation";
+        }
+        else if(errorCode[1] == 3){
+            return "disk full or allocation exceeded";
+        }
+        else if(errorCode[1] == 4){
+            return "Illegal TFTP operation";
+        }
+        else if(errorCode[1] == 5){
+            return "Unknown transfer ID";
+        }
+        else if(errorCode[1] == 6){
+            return "file already exists";
+        }
+        else{
+            return "no such user";
+        }
     }
     // sends the initial write request
     private void WriteRequest(String file, String mode){
