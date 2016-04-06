@@ -160,12 +160,63 @@ public class Client{
             else{
                 System.out.println("Packet too big");
             }
+            continueWrite(socket, serverAddress);
         }
         catch(IOException e){
             System.out.println("There was an issue with the ReadRequest"); 
         }
     }
     //I send the data to the server
-    private void continueWrite(){
+    private void continueWrite(DatagramSocket socket, InetAddress serverName){
+        byte[] blocknumber = new byte[]{0,0};
+        byte[] Data = new byte[516];
+                    DatagramPacket packet2 = new DatagramPacket(Data, Data.length, serverName, 0);
+        try{
+                do{
+        Packet ackpacket = new Packet((byte)3, blocknumber);
+        DatagramPacket packet1 = new DatagramPacket(ackpacket.BuildPacket4(), ackpacket.BuildPacket4().length, serverName, socket.getLocalPort());
+            socket.receive(packet1);
+            serverPort = packet1.getPort(); 
+            if(packet1.getData()[1] == 5){
+                System.out.println("error message");
+                System.exit(1);
+            }
+            else{
+                FileInputStream fis = new FileInputStream(file);
+                    blocknumber = incrementCount(blocknumber);
+                     Data = SendData(fis, blocknumber); 
+                    packet2 = new DatagramPacket(Data, Data.length, serverName, serverPort);
+                    socket.send(packet2);
+                }
+                }
+                while(packet2.getLength() ==516);
+
+            }
+        catch(IOException e){
+            System.out.println("Error: " + e.getMessage());
+        }
     }
+    private byte[] SendData(FileInputStream fis, byte[] block){
+        byte[] a = new byte[516];
+        a[0] = 0;
+        a[1] = 3;
+        a[2] = block[0];
+        a[3] =block[1]; 
+        try{
+            fis.read(a, 4, 512);
+        }
+        catch(IOException e){
+            System.out.println("error: " + e.getMessage());
+        }
+        return a;
+    }
+    private byte[] incrementCount(byte[] blocknumber){
+        if(blocknumber[1] ==-1){
+            blocknumber[0]++ ;
+        }
+        blocknumber[1]++; 
+        return blocknumber;
+    }
+
+
 }
