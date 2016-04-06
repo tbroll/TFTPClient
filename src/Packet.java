@@ -45,7 +45,7 @@ public class Packet{
         packet[packet.length-1] = 0;
         return packet; 
     }
-    // this builds the data packet to be put into a DatagramPacket and sent to or received from the server
+    // this method builds the data packet to be put into a DatagramPacket and sent to or received from the server
     public byte[] BuildPacket3(){
         byte[] packet = new byte [4 + blocknumber.length + data.length];
         System.arraycopy(opcode, 0, packet, 0, opcode.length);
