@@ -16,7 +16,7 @@ public class Client{
     private final int MAXPACKETSIZE = 516;
     private String server = "10.19.80.35";
     private int initialPort = 69;
-    private String file = "bugoti.png";
+    private String file = "testcode.txt";
     private String mode = "octet";
     private final int TIMEOUT = 10000;
 
@@ -57,7 +57,7 @@ public class Client{
     // the server sends the data back to the client (aka me)
     private void receiveData(String file){
         byte[] block = {0,1};
-        byte[] data = new byte[516];
+        byte[] data = new byte[MAXPACKETSIZE];
         byte errorCode; 
         inboundPacket= new DatagramPacket(data,
                 data.length, serverAddress, serverPort);
@@ -87,7 +87,7 @@ public class Client{
     }
     private void saveBitsToFile(String file) {
         try{
-            fos = new FileOutputStream(file);
+            fos = new FileOutputStream(file, true);
             if(inboundPacket.getLength() <= 511){ 
                 fos.write(inboundPacket.getData(), 4, inboundPacket.getLength()-4);
             }
