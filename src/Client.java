@@ -14,7 +14,7 @@ public class Client{
     private InetAddress serverAddress; 
 
     private final int MAXPACKETSIZE = 516;
-    private String server = "10.19.80.35";
+    private String server = "192.168.0.16";
     private int initialPort = 69;
     private String file = "testcode.txt";
     private String mode = "octet";
@@ -51,7 +51,7 @@ public class Client{
             receiveData(file);
         }
         catch(IOException e){
-            System.out.println("There was an issue with the ReadRequest"); 
+            System.out.println(e.getMessage());
         }
     }
     // the server sends the data back to the client (aka me)
@@ -83,7 +83,7 @@ public class Client{
                 System.out.println("error:" + e.getMessage());
             }
         }
-        while(data.length == 516);
+        while(inboundPacket.getLength() == 516);
     }
     private void saveBitsToFile(String file) {
         try{
