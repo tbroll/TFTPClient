@@ -14,9 +14,9 @@ public class Client{
     private InetAddress serverAddress; 
 
     private final int MAXPACKETSIZE = 516;
-    private String server = "192.168.0.16";
+    private String server = "10.19.32.54";
     private int initialPort = 69;
-    private String file = "testcode.txt";
+    private String file = "test.txt";
     private String mode = "octet";
     private final int TIMEOUT = 10000;
 
@@ -163,43 +163,44 @@ public class Client{
                     writePacket.build().length, serverAddress, initialPort); 
             socket.setSoTimeout(TIMEOUT);
             socket.send(outboundPacket);
-            continueWrite(file);
+            receiveAckPacket();
         }
         catch(IOException e){
             System.out.println("There was an issue with the WriteRequest"); 
         }
     }
-    //I send the data to the server
-    private void continueWrite(String file){
-        byte[] blocknumber = new byte[]{0,0};
-        byte[] Data = new byte[516];
-        outboundPacket= new DatagramPacket(Data, Data.length, serverAddress, 0);
+    private void receiveAckPacket(){
+        byte[] blocknumber = {0,0};
+        byte[] ack = new byte[4];
+        DatagramPacket Ack = new DatagramPacket(ack, ack.length, serverAddress, serverPort);
         try{
-            do{
-                AckPacket ackpacket = new AckPacket(blocknumber);
-                DatagramPacket inboundPacket = new DatagramPacket(ackpacket.build(),
-                        ackpacket.build().length, serverAddress, serverPort);
-                socket.receive(inboundPacket);
-                serverPort = inboundPacket.getPort(); 
-                if(inboundPacket.getData()[1] == 5){
-                    System.out.println("error message");
-                    System.exit(1);
-                }
-                else{
-                    fis = new FileInputStream(file);
-                    blocknumber = incrementCount(blocknumber);
-                    Data = SendData(fis, blocknumber); 
-                    outboundPacket = new DatagramPacket(Data, Data.length, serverAddress, serverPort);
-                    socket.send(outboundPacket);
-                }
-            }
-            while(outboundPacket.getLength() ==516);
-
+           socket.receive(Ack);
+           serverPort = Ack.getPort();
+           incrementCount(blocknumber);
+           if(Ack.getData()[1] == 3){
+           continueWrite(blocknumber);
+           }
+           else{
+               System.exit(1);
+           }
         }
         catch(IOException e){
-            System.out.println("Error: " + e.getMessage());
+            System.out.println(e.getMessage());
         }
     }
+    //I send the data to the server
+    private void continueWrite(byte[] blocknumber){
+        byte[] data = new byte[512];
+            try{
+                DataPacket Data = new DataPacket(blocknumber, data);
+                outboundPacket = new DatagramPacket(Data.build(),
+                        Data.build().length, serverAddress, serverPort);
+                socket.send(outboundPacket);
+            }
+            catch(IOException e){
+                System.out.println(e.getMessage());
+            }
+        }
     //builds my data packet
     private byte[] SendData(FileInputStream fis, byte[] block){
         byte[] a = new byte[516];
