@@ -191,14 +191,16 @@ public class Client{
     //I send the data to the server
     private void continueWrite(byte[] blocknumber){
             try{
-                fis = new FileInputStream(file);
-                byte[] data =putDataIntoByteArray(fis, blocknumber);
-                System.out.println(file);
-                System.out.println(fis.available()+4);
+                File newfile = new File(file);
+                fis = new FileInputStream(newfile);
+                byte[] data =putDataIntoByteArray(fis, newfile);
+                System.out.println("Name of file: " + file);
+                System.out.println("remaining data to send: " + fis.available());
+                System.out.println("Size of file: " + newfile.length());
                 fis.close();
                 DataPacket Data = new DataPacket(blocknumber, data);
                 outboundPacket = new DatagramPacket(Data.build(),
-                        Data.build().length, serverAddress, serverPort);
+                        Data.build().length-2, serverAddress, serverPort);
                 socket.send(outboundPacket);
             }
             catch(IOException e){
@@ -206,14 +208,11 @@ public class Client{
             }
         }
     //builds my data packet
-    private byte[] putDataIntoByteArray(FileInputStream fis, byte[] block){
-        byte[] a = new byte[516];
-        a[0] = 0;
-        a[1] = 3;
-        a[2] = block[0];
-        a[3] =block[1]; 
+    private byte[] putDataIntoByteArray(FileInputStream fis, File file){
+        byte[] a = new byte[Math.min(512, (int)file.length())];
+                System.out.println("Length of data array: " + a.length);
         try{
-            fis.read(a, 4, 512);
+            fis.read(a, 0, Math.min(512,(int)file.length()));
         }
         catch(IOException e){
             System.out.println("error: " + e.getMessage());
