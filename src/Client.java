@@ -14,7 +14,7 @@ public class Client{
     private InetAddress serverAddress; 
 
     private final int MAXPACKETSIZE = 516;
-    private String server = "10.19.32.54";
+    private String server = "10.19.105.48";
     private int initialPort = 69;
     private String file = "test.txt";
     private String mode = "octet";
@@ -124,7 +124,6 @@ public class Client{
             System.out.println(e.getMessage());
         }
         System.out.println("Error: " + errorCode + " " + Errmsg(errorCode));
-
     }
     //returns the error msg that corresponds to the error code
     private String Errmsg(byte errorCode){
@@ -156,20 +155,20 @@ public class Client{
     // sends the initial write request
     private void WriteRequest(String file, String mode){
         try{
-            DatagramSocket socket = new DatagramSocket() ;
+            socket = new DatagramSocket() ;
             serverAddress = InetAddress.getByName(server);
             ReadWritePacket writePacket= new ReadWritePacket(optWrite, file, mode);
             outboundPacket = new DatagramPacket( writePacket.build(),
                     writePacket.build().length, serverAddress, initialPort); 
             socket.setSoTimeout(TIMEOUT);
             socket.send(outboundPacket);
-            receiveAckPacket();
+            initializeConnection();
         }
         catch(IOException e){
             System.out.println("There was an issue with the WriteRequest"); 
         }
     }
-    private void receiveAckPacket(){
+    private void initializeConnection(){
         byte[] blocknumber = {0,0};
         byte[] ack = new byte[4];
         DatagramPacket Ack = new DatagramPacket(ack, ack.length, serverAddress, serverPort);
@@ -177,10 +176,11 @@ public class Client{
            socket.receive(Ack);
            serverPort = Ack.getPort();
            incrementCount(blocknumber);
-           if(Ack.getData()[1] == 3){
+           if(Ack.getData()[1] == 4){
            continueWrite(blocknumber);
            }
            else{
+               System.out.println("Cannot initialize connection");
                System.exit(1);
            }
         }
@@ -190,8 +190,12 @@ public class Client{
     }
     //I send the data to the server
     private void continueWrite(byte[] blocknumber){
-        byte[] data = new byte[512];
             try{
+                fis = new FileInputStream(file);
+                byte[] data =putDataIntoByteArray(fis, blocknumber);
+                System.out.println(file);
+                System.out.println(fis.available()+4);
+                fis.close();
                 DataPacket Data = new DataPacket(blocknumber, data);
                 outboundPacket = new DatagramPacket(Data.build(),
                         Data.build().length, serverAddress, serverPort);
@@ -202,7 +206,7 @@ public class Client{
             }
         }
     //builds my data packet
-    private byte[] SendData(FileInputStream fis, byte[] block){
+    private byte[] putDataIntoByteArray(FileInputStream fis, byte[] block){
         byte[] a = new byte[516];
         a[0] = 0;
         a[1] = 3;
