@@ -1,12 +1,13 @@
 import java.lang.*;
+import java.nio.ByteBuffer;
 public class AckPacket{
 
-    private final String opcode = "4";
-    private byte[] blocknumber;
+    private final short opcode = 4;
+    private short blocknumber;
 
     // This creates a Acknowledgement Packet
 
-    public AckPacket(byte [] blocknumber){
+    public AckPacket(short blocknumber){
         this.blocknumber = blocknumber;
     }
 
@@ -15,14 +16,13 @@ public class AckPacket{
 
     public byte[] createPacket(){
 
-        byte[] packet = new byte [4];
+        ByteBuffer packet = ByteBuffer.allocate(4);
 
-        byte[] oc = opcode.getBytes(); 
+        packet.putShort(opcode);
+        packet.putShort(blocknumber);
 
-        System.arraycopy(oc, 0, packet, 0, oc.length);
-        System.arraycopy(blocknumber, 0, packet, oc.length, 2);
+        return packet.array();
 
-        return packet; 
     }
 }
 

@@ -1,6 +1,8 @@
 import java.lang.*;
+import java.nio.*;
 public class WritePacket {
-    private final String opcode = "2";
+
+    private final short opcode = 2;
     private String filename;
     private String mode;
 
@@ -14,23 +16,19 @@ public class WritePacket {
 
     public byte[] createPacket(){
 
-        byte[] packet = new byte [4 + filename.length() + mode.length()];
+        byte[] fn = filename.getBytes();
+        byte[] mo = mode.getBytes();
+        byte zero = 0;
 
-        byte[] oc = opcode.getBytes();
-        byte[] filename1 = filename.getBytes();
-        byte[] mode1 = mode.getBytes();
+        ByteBuffer packet = ByteBuffer.allocate(2+fn.length+1+mo.length+1);
 
-        System.arraycopy(oc, 0, packet, 0, oc.length);
-        System.arraycopy(filename1, 0, packet, oc.length, filename1.length);
+        packet.putShort(opcode);
+        packet.put(fn);
+        packet.put(zero);
+        packet.put(mo);
+        packet.put(zero);
 
-        packet[oc.length + filename1.length] = 0;
-
-        System.arraycopy(mode1, 0, packet, oc.length+filename1.length+1, mode1.length);
-
-        packet[packet.length-1] = 0;
-
-        return packet; 
+        return packet.array();
     }
 }
-
 

@@ -1,13 +1,14 @@
 import java.lang.*;
+import java.nio.ByteBuffer;
 public class DataPacket {
 
-    private final String opcode = "3";
-    private byte[] blocknumber;
+    private final short opcode = 3;
+    private short blocknumber;
     private byte [] data;
 
     // This creates a Data Packet
 
-    public DataPacket(byte[] blocknumber, byte[] data){
+    public DataPacket(short blocknumber, byte[] data){
         this.blocknumber = blocknumber;
         this.data = data;
     }
@@ -17,15 +18,13 @@ public class DataPacket {
 
     public byte[] createPacket(){
 
-        byte[] packet = new byte [4 + blocknumber.length + data.length];
+        ByteBuffer packet = ByteBuffer.allocate(4+data.length);
 
-        byte[]oc = opcode.getBytes();
+        packet.putShort(opcode);
+        packet.putShort(blocknumber);
+        packet.put(data);
 
-        System.arraycopy(oc, 0, packet, 0, oc.length);
-        System.arraycopy(blocknumber, 0, packet, oc.length, blocknumber.length);
-        System.arraycopy(data, 0, packet, oc.length+blocknumber.length, data.length);
-
-        return packet; 
+        return packet.array();
     }
 }
 
