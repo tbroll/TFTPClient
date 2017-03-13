@@ -1,24 +1,35 @@
+package tftp;
 import java.lang.*;
+import java.nio.ByteBuffer;
 public class ErrorPacket {
-    private byte opcode;
-    private byte errorcode;
+
+    private final short opcode = 5;
+    private short errorcode;
     private String errmsg;
-// This creates a Error Packet Packet
-    public ErrorPacket(byte errorcode, String errmsg){
-        this.opcode = 5;
+
+    // This creates a Error Packet Packet
+
+    public ErrorPacket(short errorcode, String errmsg){
         this.errorcode = errorcode;
         this.errmsg = errmsg;
     }
-    // this builds the error packet to be put into a DatagramPacket and sent to or received from the server
-    public byte[] build(){
-        byte[] optcode = {0,5};
-        byte[] errorCode = {0, errorcode};
-        byte[] errorMsg = errmsg.getBytes();
-        byte[] packet = new byte [optcode.length+errorCode.length+errorMsg.length];
-        System.arraycopy(optcode, 0, packet, 0, 2);
-        System.arraycopy(errorCode, 0, packet, optcode.length, 2);
-        System.arraycopy(errorMsg, 0, packet, optcode.length, errorMsg.length);
-        packet[packet.length-1] = 0;
-        return packet; 
+
+    // this builds the error packet to be put into a DatagramPacket and sent to
+    // or received from the server
+
+    public byte[] createPacket(){
+
+        byte[] em = errmsg.getBytes();
+        byte zero = 0;
+
+        ByteBuffer packet = ByteBuffer.allocate(5+em.length);
+
+        packet.putShort(opcode);
+        packet.putShort(errorcode);
+        packet.put(em);
+        packet.put(zero);
+
+        return packet.array();
+
     }
 }

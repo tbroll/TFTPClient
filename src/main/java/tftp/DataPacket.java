@@ -1,21 +1,31 @@
+package tftp;
 import java.lang.*;
+import java.nio.ByteBuffer;
 public class DataPacket {
-    private byte opcode;
-    private byte[] blocknumber;
+
+    private final short opcode = 3;
+    private short blocknumber;
     private byte [] data;
-// This creates a Data Packet
-    public DataPacket(byte[] blocknumber, byte[] data){
-        this.opcode = 3;
+
+    // This creates a Data Packet
+
+    public DataPacket(short blocknumber, byte[] data){
         this.blocknumber = blocknumber;
         this.data = data;
     }
-    // this method builds the data packet to be put into a DatagramPacket and sent to or received from the server
-    public byte[] build(){
-        byte[] packet = new byte [4 + blocknumber.length + data.length];
-        byte[]optcode = {0,3};
-        System.arraycopy(optcode, 0, packet, 0, optcode.length);
-        System.arraycopy(blocknumber, 0, packet, optcode.length, blocknumber.length);
-        System.arraycopy(data, 0, packet, optcode.length+blocknumber.length, data.length);
-        return packet; 
+
+    // this method builds the data packet to be put into a DatagramPacket and
+    // sent to or received from the server
+
+    public byte[] createPacket(){
+
+        ByteBuffer packet = ByteBuffer.allocate(4+data.length);
+
+        packet.putShort(opcode);
+        packet.putShort(blocknumber);
+        packet.put(data);
+
+        return packet.array();
     }
 }
+
